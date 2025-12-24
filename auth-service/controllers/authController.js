@@ -2,7 +2,7 @@ const db = require("../db/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const sendResponse = require("../utils/response");
-const { findUserByEmail, createUser } = require("../model/userModel");
+const { findUserByEmail, createUser, findUserById, updateOTP, verifyOTP, updatePassword} = require("../model/userModel");
 
 const setTokenCookie = (res, token) => {
   const options = {
@@ -79,8 +79,66 @@ const logout = (req, res) => {
     sendResponse(res, 200, 'Logout Successful');
 }
 
+const getMe = async (req, res) => {
+    try {
+        const user = await findUserById(req.user.id);
+        if (!user) {
+            return sendResponse(res, 404, 'User not found');
+        }
+        sendResponse(res, 200, 'User data fetched successfully', { user });
+    } catch (error) {
+        console.error(error);
+        sendResponse(res, 500, 'Internal Server Error');
+    }
+}
+
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return sendResponse(res, 400, 'Missing Fields');
+    
+        const user = await findUserByEmail(email);
+        if (!user) sendResponse(res, 404, 'User not found')
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiry = new Date(Date.now() + 60 * 1000);
+
+        await updateOTP(email, otp, expiry);
+
+        //here use nodemailer
+        console.log(`>>> RESET OTP FOR ${email}: ${otp} <<<`);
+
+        sendResponse(res, 200, 'OTP sent successfully');
+    } catch (error) {
+        console.error(error);
+        sendResponse(res, 500, 'Internal Server Error');
+    }
+}
+
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        if (!email || !otp || !newPassword) return sendResponse(res, 400, 'Missing Fields');
+
+        const user = await verifyOTP(email, otp);
+        if (!user) return sendResponse(res, 400, 'Invalid or expired OTP');
+
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+        await updatePassword(user.id, hashedPassword);
+
+        sendResponse(res, 200, 'Password reset successfully');
+    }
+    catch (error) {
+        console.error(error);
+        sendResponse(res, 500, 'Internal Server Error');
+    }
+}
+
 module.exports = {
   register,
   login,
   logout,
+  getMe,
+  forgotPassword,
+  resetPassword
 };
