@@ -3,7 +3,13 @@ const proxy = require('express-http-proxy');
 const cors = require('cors');
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 app.use('/api/auth', proxy('http://localhost:4001'));      // Auth Service
@@ -14,3 +20,4 @@ app.use('/api/auth', proxy('http://localhost:4001'));      // Auth Service
 app.listen(8000, () => {
     console.log('Gateway running on Port 8000');
 });
+

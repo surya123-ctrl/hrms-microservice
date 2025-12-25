@@ -12,12 +12,6 @@ router.get('/me', protect, getMe);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 
-// 1. Forgot & Reset Password
-// HRMS mein aksar log password bhool jate hain. Aapko email-based reset system chahiye hoga.
-
-// API: /api/auth/forgot-password (User email dalega, usse reset link ya OTP jayega).
-
-// API: /api/auth/reset-password (New password update karne ke liye).
 
 // 2. Change Password (Logged-in User)
 // Security ke liye har 3-6 mahine mein password badalna zaroori hota hai.

@@ -108,7 +108,7 @@ const forgotPassword = async (req, res) => {
         //here use nodemailer
         console.log(`>>> RESET OTP FOR ${email}: ${otp} <<<`);
 
-        sendResponse(res, 200, 'OTP sent successfully');
+        sendResponse(res, 200, 'OTP sent successfully', {email});
     } catch (error) {
         console.error(error);
         sendResponse(res, 500, 'Internal Server Error');
